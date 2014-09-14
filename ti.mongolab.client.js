@@ -23,6 +23,7 @@ var client = function(config){
 	var that = this;
 	config = config || {};
 	config.timeout || 30000;
+	config.debug || false;
 	
 	if(!config.hasOwnProperty("apiKey")){
 		throw "The required property apiKey is missing";
@@ -33,7 +34,7 @@ var client = function(config){
 			if(!config.hasOwnProperty("dbName")){
 				throw "dbName has not been set. This can be set when creating the module or using the setDbName method.";
 			}
-			return _apiURLRoot + 'databases/'+ + config.dbName + '/';
+			return _apiURLRoot + 'databases/'+ config.dbName + '/';
 		},		
 		getCollectionUrl : function(collectionName){
 			return urlBuilders.getDbUrl() + 'collections/'+ collectionName + '?apiKey=' + config.apiKey;
@@ -45,6 +46,10 @@ var client = function(config){
 	
 	var network = {
 		fetch : function(actionType, url, callback){
+			if(config.debug){
+				Ti.API.debug("network.fetch URL: " + url);
+			}
+			
 			var done = false;
 			var xhr = Ti.Network.createHTTPClient();
 			xhr.setTimeout(config.timeout);
@@ -56,10 +61,10 @@ var client = function(config){
 				if (xhr.readyState == 4 && !done) {
 					done=true;
 					//Make sure the network didn't freak out
-					if(this.status!==200){
-						 callback({sucess:false, message:xhr.status, statusCode:xhr.status});			
+					if(this.status==200){
+						 callback({sucess:true, docs:JSON.parse(xhr.responseData), statusCode:xhr.status});						 			
 					}else{
-						 callback({sucess:true, data:xhr.responseData, statusCode:xhr.status});
+						 callback({sucess:false, message:xhr.status, statusCode:xhr.status});
 					}											
 				}	
 			};
@@ -67,6 +72,9 @@ var client = function(config){
 			xhr.send();			
 		},
 		execute : function(actionType,url,data,callback){
+			if(config.debug){
+				Ti.API.debug("network.execute URL: " + url);
+			}			
 			var done = false;
 			var xhr = Ti.Network.createHTTPClient();
 			xhr.setRequestHeader("Accept-Type", "application/json; charset=utf-8");
@@ -80,7 +88,7 @@ var client = function(config){
 					done=true;
 					//Make sure the network didn't freak out
 					if((xhr.status==200) ||(xhr.status==201)){
-						callback({sucess:true, data:xhr.responseData, statusCode:xhr.status});		
+						callback({sucess:true, docs:xhr.responseData, statusCode:xhr.status});		
 					}else{
 						callback({sucess:false, message:xhr.status, statusCode:xhr.status});		 
 					}											
