@@ -11,9 +11,12 @@ var helpers = {
 	  var str = [];
 	  for(var p in obj) {
 	    var k = prefix ? prefix + "[" + p + "]" : p, v = obj[p];
-	    str.push(typeof v == "object" ?
-	      serialize(v, k) :
-	      encodeURIComponent(k) + "=" + encodeURIComponent(v));
+	    if((k=='c')||(k=='fo')){
+	    	str.push(typeof v == true ? k + "=true": k + "=false");	
+	    }else{
+	    	str.push(typeof v == "object" ? k + "=" + JSON.stringify(v): k + "=" + v);	
+	    }
+	    
 	  }
 	  return str.join("&");
 	}	
@@ -46,6 +49,7 @@ var client = function(config){
 	
 	var network = {
 		fetch : function(actionType, url, callback){
+			
 			if(!Ti.Network.online){
 				callback({
 					success:false, message:"No network connection available", statusCode:0	
@@ -74,10 +78,12 @@ var client = function(config){
 					}											
 				}	
 			};
+			
 			xhr.open(actionType, url);
 			xhr.send();			
 		},
 		execute : function(actionType,url,data,callback){
+			
 			if(!Ti.Network.online){
 				callback({
 					success:false, message:"No network connection available", statusCode:0	
@@ -88,6 +94,7 @@ var client = function(config){
 			if(config.debug){
 				Ti.API.debug("network.execute URL: " + url);
 			}			
+			
 			var done = false;
 			var xhr = Ti.Network.createHTTPClient();
 			xhr.setRequestHeader("Accept-Type", "application/json; charset=utf-8");
@@ -107,6 +114,7 @@ var client = function(config){
 					}											
 				}	
 			};
+			
 			xhr.open(actionType, url);
 			
 			if(data !=null){
