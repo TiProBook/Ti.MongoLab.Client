@@ -65,6 +65,7 @@ var client = function(config){
 			xhr.setTimeout(config.timeout);
 	
 			xhr.onerror = function(err) {
+				Ti.API.error(JSON.stringify(err));
 				callback({success:false,message:err, statusCode:xhr.status});
 			};
 			xhr.onload = function() {
@@ -97,10 +98,11 @@ var client = function(config){
 			
 			var done = false;
 			var xhr = Ti.Network.createHTTPClient();
-			xhr.setRequestHeader("Accept-Type", "application/json; charset=utf-8");
+			
 			xhr.setTimeout(config.timeout);
 	
 			xhr.onerror = function(err) {
+				Ti.API.error(JSON.stringify(err));
 				callback({success:false,message:err, statusCode:xhr.status});
 			};
 			xhr.onload = function() {
@@ -114,9 +116,10 @@ var client = function(config){
 					}											
 				}	
 			};
-			
+									
 			xhr.open(actionType, url);
-			
+			xhr.setRequestHeader('Content-Type', 'application/json');
+
 			if(data !=null){
 				xhr.send(JSON.stringify(data));
 			}else{
@@ -156,15 +159,21 @@ var client = function(config){
 	
 	that.createDocument = function(collectionName,data,callback){
 		var url = urlBuilders.getCollectionUrl(collectionName);
-		network.execute(actionTypes.POST,data,callback);
+		network.execute(actionTypes.POST,url,data,callback);
 	};
 
 	that.updateDocuments = function(collectionName,query,data,callback){
 		var qryString = helpers.serialize(query);
 		var url = urlBuilders.getCollectionUrl(collectionName) + '&' + qryString;
-		network.execute(actionTypes.PUT,data,callback);
+		network.execute(actionTypes.PUT,url,data,callback);
 	};
-	
+
+	that.deleteDocuments = function(collectionName,query,callback){
+		var qryString = helpers.serialize(query);
+		var url = urlBuilders.getCollectionUrl(collectionName) + '&' + qryString;
+		network.execute(actionTypes.PUT,url,[],callback);
+	};
+		
 	that.getDocument = function(collectionName,documentID,callback){
 		var url = urlBuilders.getDocumentUrl(collectionName,documentID);
 		network.fetch(actionTypes.GET,url,callback);
@@ -172,12 +181,12 @@ var client = function(config){
 
 	that.updateDocument = function(collectionName,documentID,data,callback){
 		var url = urlBuilders.getDocumentUrl(collectionName,documentID);
-		network.execute(actionTypes.PUT,data,callback);
+		network.execute(actionTypes.PUT,url,data,callback);
 	};
 	
 	that.deleteDocument = function(collectionName,documentID,callback){
 		var url = urlBuilders.getDocumentUrl(collectionName,documentID);
-		network.execute(actionTypes.DELETE,null,callback);		
+		network.execute(actionTypes.DELETE,url,null,callback);		
 	};
 						
 	return that;
